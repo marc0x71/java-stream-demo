@@ -5,10 +5,12 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OrderStreamTest {
 
@@ -35,5 +37,31 @@ public class OrderStreamTest {
         assertEquals(13180, ordersPerYear.get(2015));
         assertEquals(13192, ordersPerYear.get(2016));
         assertEquals(7558, ordersPerYear.get(2017));
+    }
+
+    @Test
+    void ordersPerYearMax() {
+        Optional<Map.Entry<Integer, Long>> max = orders.
+                collect(Collectors.groupingBy(o -> o.getOrderDate().get(Calendar.YEAR), Collectors.counting()))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue());
+
+        assertTrue(max.isPresent());
+        assertEquals(2013, max.get().getKey());
+        assertEquals(13357, max.get().getValue());
+    }
+
+    @Test
+    void ordersPerYearCollectorsMax() {
+        Optional<Map.Entry<Integer, Long>> max = orders.
+                collect(Collectors.groupingBy(o -> o.getOrderDate().get(Calendar.YEAR), Collectors.counting()))
+                .entrySet().stream()
+                .collect(
+                        Collectors.maxBy(Map.Entry.comparingByValue())
+                );
+
+        assertTrue(max.isPresent());
+        assertEquals(2013, max.get().getKey());
+        assertEquals(13357, max.get().getValue());
     }
 }

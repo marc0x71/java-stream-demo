@@ -20,7 +20,6 @@
             <version>1.18.16</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
     <properties>

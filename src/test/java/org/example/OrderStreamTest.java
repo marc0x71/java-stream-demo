@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.collectors.MinMaxFinder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -63,5 +64,40 @@ public class OrderStreamTest {
         assertTrue(max.isPresent());
         assertEquals(2013, max.get().getKey());
         assertEquals(13357, max.get().getValue());
+    }
+
+    @Test
+    void maxProfitInEurope() {
+        Optional<Order> order = orders.parallel()
+                .filter(o -> o.getRegion().equals("Europe"))
+                .reduce((o1, o2) -> o1.getTotalProfit() > o2.getTotalProfit() ? o1 : o2);
+
+        assertTrue(order.isPresent());
+        assertEquals(205902516, order.get().getOrderId());
+    }
+
+    @Test
+    void minProfitInEurope() {
+        Optional<Order> order = orders.parallel()
+                .filter(o -> o.getRegion().equals("Europe"))
+                .reduce((o1, o2) -> o1.getTotalProfit() < o2.getTotalProfit() ? o1 : o2);
+
+        assertTrue(order.isPresent());
+        assertEquals(658217370, order.get().getOrderId());
+    }
+
+    @Test
+    void minAndMaxProfitInEurope() {
+        MinMaxFinder<Order> order = orders.parallel()
+                .filter(o -> o.getRegion().equals("Europe"))
+                .collect(() -> new MinMaxFinder<>(
+                                (o1, o2) -> o1.getTotalProfit() < o2.getTotalProfit() ? o1 : o2,
+                                (o1, o2) -> o1.getTotalProfit() > o2.getTotalProfit() ? o1 : o2),
+                        MinMaxFinder::accumulate,
+                        MinMaxFinder::combine);
+
+        assertEquals(205902516, order.getMax().getOrderId());
+        assertEquals(658217370, order.getMin().getOrderId());
+
     }
 }
